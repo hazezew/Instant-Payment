@@ -1,0 +1,68 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '5.3.1'
+
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.5.0'
+    implementation group: 'org.testng', name: 'testng', version: '6.14.3'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.9'
+    implementation group: 'io.cucumber', name: 'cucumber-testng', version: '4.8.0'
+    implementation group: 'io.cucumber', name: 'cucumber-core', version: '4.8.0'
+    implementation group: 'io.cucumber', name: 'cucumber-picocontainer', version: '4.8.0'
+    implementation group: 'com.aventstack', name: 'extentreports', version: '4.1.3'
+    implementation group: 'net.rcarz', name: 'jira-client', version: '0.5'
+    implementation group: 'com.oracle.database.jdbc', name: 'ojdbc8', version: '21.7.0.0'
+    implementation group: 'com.oracle.ojdbc', name: 'ojdbc8', version: '19.3.0.0'
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-http-jdk-client', version: '4.5.0'
+}
+configurations {
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+task cucumber() {
+    dependsOn assemble, testClasses
+    doLast {
+        javaexec {
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = [
+                    '--glue', 'stepDef', 'src/test/resources',
+                    '--plugin', 'pretty',
+                    '--plugin', 'json:target/cucumber.json',
+                    '--plugin', 'json:target/cucumber.json',
+                    '--plugin', 'html:target/cucumber-report',
+                    '--plugin', 'rerun:target/rerun.txt',
+                    '--threads', '2',
+                    '--tags','@MerchantManagement'
+            ]   // run this command on CLI on root dir: gradle cucumber
+        }
+    }
+}
+
+task rerunCucumber() {
+    doLast {
+        javaexec {
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--glue', 'stepDef', 'src/test/resources',
+                    '--plugin', 'json:target/rerun.json',
+                    '@target/rerun.txt']
+        }
+    }
+}
+
+//test {
+//    useJUnitPlatform()
+//}
